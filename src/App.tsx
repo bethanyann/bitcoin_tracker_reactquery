@@ -25,9 +25,8 @@ const getBitcoinData = async (): Promise<Currencies> => {
 const INTERVAL_TIME = 30000; //30 second
 
 const App = () => {
-                                             //first argument is the query key name
-                                             //second argument is the function name
-  const { data, isLoading, error, refetch } = useQuery<Currencies>("bc-data", getBitcoinData);
+  //first argument is the query key name //second argument is the function name  //third argument is an object containing the time useQuery should refetch the data
+  const { data, isLoading, error, refetch } = useQuery<Currencies>("bc-data", getBitcoinData, { refetchInterval: INTERVAL_TIME});
 
   //create state for the dropdown currency value so that it is controlled by react 
   const [ currency, setCurrency ] = useState('USD');
@@ -47,10 +46,18 @@ const App = () => {
         <h2>Bitcoin Price</h2>
         <select value={currency} onChange={handleCurrencySelection}>
           {/* need to map through the data here, and we want the keys from the options to be the values  */}
-          {data && Object.keys(data).map(currency => (
-            <option key={currency} value={currency}/>
+          { data && Object.keys(data).map(currency => (
+            <option key={currency} value={currency}>
+                {currency}
+            </option>
           ))}
         </select>
+        <div>
+          <h2>
+            { data && data[currency].symbol }
+            { data && data[currency].last }
+          </h2>
+        </div>
       </>
     </Wrapper>
   );
