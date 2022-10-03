@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-//styles 
+// styles 
 import { Wrapper } from './styles/App.styles';
+// actions
+import { changeCurrency } from './features/appSlice';
+// types
+import { Currencies } from './bitcoinTypes';
+//Hooks
+import { useAppSelector, useAppDispatch } from './reduxHooks';
+import { useGetBitcoinDataQuery } from './services/app';
 
-type BitcoinData = {
-  '15m': number;
-  buy: number;
-  last: number;
-  sell: number;
-  symbol: string;
-}
 
-//type for the whole bitcoin object
-type Currencies = {
-  //each key is a string, and each one is paired with a BitcoinData obj
-  [key: string]: BitcoinData
-}
 
 //fetch function for data - create it outside of the app component so it isn't recreated on every render 
 const getBitcoinData = async (): Promise<Currencies> => {
@@ -26,13 +21,22 @@ const INTERVAL_TIME = 30000; //30 second
 
 const App = () => {
   //first argument is the query key name //second argument is the function name  //third argument is an object containing the time useQuery should refetch the data
-  const { data, isLoading, error, refetch } = useQuery<Currencies>("bc-data", getBitcoinData, { refetchInterval: INTERVAL_TIME});
+  // const { data, isLoading, error, refetch } = useQuery<Currencies>("bc-data", getBitcoinData, { refetchInterval: INTERVAL_TIME});
 
+  //swapping out this local state for the redux state 
   //create state for the dropdown currency value so that it is controlled by react 
-  const [ currency, setCurrency ] = useState('USD');
+  //const [ currency, setCurrency ] = useState(Currencies.USD);
+
+  const dispatch = useAppDispatch();
+  const { currency } = useAppSelector(state => state.app);
+
+  const { data, isLoading, error } = useGetBitcoinDataQuery(undefined, {
+    pollingInterval: INTERVAL_TIME
+  });
 
   const handleCurrencySelection = (e:any) => {
-    setCurrency(e.currentTarget.value);
+    //a dispatch action is used when a state value needs updated 
+    dispatch(changeCurrency(e.currentTarget.value));
   }
 
   //console.log(data);
